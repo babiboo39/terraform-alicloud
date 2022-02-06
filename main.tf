@@ -67,4 +67,23 @@ resource "alicloud_instance" "default" {
         role = "works"
         dc   = "ap-southest-5a"
     }
+
+    provisioner "remote-exec" {
+    # Install Python for Ansible
+        inline = ["apt update;apt install python -y;rm -rf /usr/bin/python;apt install python3-pip -y;rm -rf /usr/local/bin/pip;ln -s /usr/bin/pip3 /usr/local/bin/pip;pip install docker;apt install docker.io -y;"]
+        connection {
+            host        = "${self.public_ip}"
+            type        = "ssh"
+            user        = "root"
+            private_key = "${file(var.ssh_key_private)}"
+        }
+    }
+
+    provisioner "local-exec" {
+        command = "echo '[docker]' > ./inventory.ini;echo '${self.public_ip}' >> ./inventory.ini"
+    }
+
+    provisioner "local-exec" {
+        command = "ansible-playbook -u root -i inventory.ini --private-key ${var.ssh_key_private} -T 300 wordpress-playbook.yml"
+    }
 }
