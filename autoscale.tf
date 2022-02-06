@@ -15,3 +15,9 @@ resource "alicloud_ess_scaling_configuration" "default" {
   active            = true
   enable            = true
 }
+
+resource "alicloud_ess_attachment" "default" {
+  scaling_group_id = alicloud_ess_scaling_group.default.id
+  instance_ids     = [alicloud_instance.default[0].id, alicloud_instance.default[1].id]
+  force            = true
+}
